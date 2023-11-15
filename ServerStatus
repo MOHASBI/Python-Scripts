@@ -1,0 +1,63 @@
+import socket
+import ssl
+import smtplib
+from datetime import datetime
+import pickle
+import time
+
+
+def check_server_status(server_address, port):
+    try:
+        with socket.create_connection((server_address, port), timeout=5) as sock:
+            with ssl.wrap_socket(sock, ssl_version=ssl.PROTOCOL_TLS) as ssock:
+                return True
+    except (socket.timeout, ConnectionRefusedError, OSError):
+        return False
+
+
+def send_email_alert(subject, body, to_email):
+    smtp_server = 'your_smtp_server'
+    smtp_port = 587
+    smtp_username = 'your_username'
+    smtp_password = 'your_password'
+
+    from_email = 'your_email@example.com'
+
+    
+    with smtplib.SMTP(smtp_server, smtp_port) as server:
+        server.starttls()
+        server.login(smtp_username, smtp_password)
+        message = f"Subject: {subject}\n\n{body}"
+        server.sendmail(from_email, to_email, message)
+
+
+def save_performance_history(history_file, status, timestamp):
+    try:
+        with open(history_file, 'rb') as f:
+            performance_history = pickle.load(f)
+    except FileNotFoundError:
+        performance_history = []
+    performance_history.append({'status': status, 'timestamp': timestamp})
+
+    with open(history_file, 'wb') as f:
+        pickle.dump(performance_history, f)
+
+
+if __name__ == "__main__":
+    server_address = "your_server_address"
+    server_port = 443
+    email_alert_recipient = "recipient@example.com"
+    history_file = "performance_history.pkl"
+
+    while True:
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        # Check server status
+        if check_server_status(server_address, server_port):
+            print(f"[{timestamp}] Server is up.")
+            save_performance_history(history_file, 'up', timestamp)
+        else:
+            print(f"[{timestamp}] Server is down. Sending email alert.")
+            send_email_alert("Server Down Alert", f"The server is down at {timestamp}.", email_alert_recipient)
+            save_performance_history(history_file, 'down', timestamp)
+        time.sleep(300)
