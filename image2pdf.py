@@ -4,10 +4,10 @@ from PIL import Image
 import os
   
 # storing image path
-img_path = "C:/Users/vedan/OneDrive/Desktop/image.png"
+img_path = "C:/Users/['Account Name']/OneDrive/Desktop/image.png"
   
 # storing pdf path
-pdf_path = "C:/Users/vedan/OneDrive/Desktop/image.pdf"
+pdf_path = "C:/Users/['Account Name']/OneDrive/Desktop/image.pdf"
   
 # opening image
 image = Image.open(img_path)
